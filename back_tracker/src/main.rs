@@ -4,6 +4,7 @@ use std::env;
 use std::process;
 use std::error::Error;
 
+use source_simulator::Sample;
 use source_simulator::Point;
 use source_simulator::Edge;
 use source_simulator::Geometric;
@@ -15,12 +16,32 @@ const ENDING_POINT: i32 = 100;
 
 
 fn main() {
-	let mut grid = read_data().unwrap();
+	//let mut grid = read_grid().unwrap();
+	let file_path = get_first_arg().unwrap_or(String::from("test.csv"));
+	let samples = read_samples(file_path);
 }
 
-fn read_data() -> Result<(Vec<Vec<Vec<f32>>>), Box<Error>> {
-	
-	let file_path = get_first_arg()?;
+fn read_samples(file_path: String) -> Result<Vec<Sample>, Box<Error>> {
+
+	let mut rdr = csv::ReaderBuilder::new()
+		.has_headers(true)
+		.from_path(file_path)?;
+
+	let mut samples = Vec::new();
+
+	for result in rdr.records() {
+		let mut record = result?;
+		let dosage: f32 = record.get(3).unwrap().parse().unwrap();
+		let mut record = record.iter().take(3).map(|val| val.parse::<i32>().unwrap());
+		samples.push(Sample::new( 
+					Point::new(record.next().unwrap(), record.next().unwrap(), record.next().unwrap()),
+					dosage));
+	}
+
+	Ok(samples)
+}
+
+fn read_grid(file_path: String) -> Result<Vec<Vec<Vec<f32>>>, Box<Error>> {
 
 	let mut rdr = csv::ReaderBuilder::new()
 		.has_headers(false)
@@ -40,12 +61,15 @@ fn read_data() -> Result<(Vec<Vec<Vec<f32>>>), Box<Error>> {
 	Ok(grid)
 }
 
+
 fn get_first_arg() -> Result<String, Box<Error>> {
 	match env::args().nth(1) {
 		None => Err (From::from("Expected 1 argument but got none")),
 		Some(file_path) => Ok(file_path),
 	}
 }
+
+
 
 // #[derive(Debug)]
 // struct Sphere {

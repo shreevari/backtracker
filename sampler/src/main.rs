@@ -10,12 +10,14 @@ use source_simulator::Simulator;
 use source_simulator::Space;
 use source_simulator::Source;
 use source_simulator::Point;
+use source_simulator::Sample;
 use source_simulator::Edge;
 use source_simulator::Geometric;
 
 // Simulation space constants
 const STARTING_POINT: i32 = 0;
 const ENDING_POINT: i32 = 100;
+const NUMBER_OF_SAMPLES: u32 = 100;
 
 struct PointGeometry {
 	vertices: Vec<Point>,
@@ -78,8 +80,11 @@ fn main() {
     
     let random_point = gen_random_point();
     println!("Sample position : {:?}", random_point);
-    println!("Simulated Dose : {}", point_source_simulator.get_dosage_at(random_point));
+    println!("Simulated Dose : {}", point_source_simulator.get_dosage_at(&random_point));
     
+    write_random_samples(
+    	get_first_arg().unwrap_or(String::from("data.csv")),
+    	get_random_samples(point_source_simulator, NUMBER_OF_SAMPLES));
 }
 
 // Generating random values for the position of the point
@@ -99,7 +104,7 @@ fn write_full_grid(point_source_simulator: Simulator) {
     		let mut row = Vec::new();
     		for z in STARTING_POINT..ENDING_POINT {
     			let grid_point = Point::new(x, y, z);
-    			let val = point_source_simulator.get_dosage_at(grid_point);
+    			let val = point_source_simulator.get_dosage_at(&grid_point);
     			row.push(val);
     		}
     		plane.push(row);
@@ -121,14 +126,22 @@ fn write_data(file_path: String, grid: Vec<Vec<Vec<f32>>>) -> Result<(), Box<Err
 	Ok(())
 }
 
-fn write_random_samples(file_path: String, simulator: Simulator, number_of_samples: u32) -> Result<(), Box<Error>> {
-	let mut writer = WriterBuilder::new().from_path(file_path)?;
+fn get_random_samples(simulator: Simulator, number_of_samples: u32) -> Vec<Sample> {
+	let mut samples = Vec::new();
 	for _n in 0..number_of_samples {
 		let random_point = gen_random_point();
-		
+		samples.push(simulator.get_sample_at(random_point));
+	}
+	samples
+} 
+fn write_random_samples(file_path: String, samples: Vec<Sample>) ->  Result<(), Box<Error>>{
+	let mut writer = WriterBuilder::new().from_path(file_path)?;
+	writer.write_record(&["x", "y", "z", "d"]);
+	for sample in samples.iter() {
+		writer.write_record(&[sample.get_x().to_string(), sample.get_y().to_string(), sample.get_z().to_string(), sample.get_dosage().to_string()]);
 	}
 	Ok(())
-} 
+}
 
 fn get_first_arg() -> Result<String, Box<Error>> {
 	match env::args().nth(1) {

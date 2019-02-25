@@ -97,7 +97,7 @@ impl Space {
 		does_enclose
 	} 	
 }
-
+#[derive(Debug)]
 pub struct Sample {
 	position: Point,
 	dosage: f32,
@@ -110,6 +110,19 @@ impl Sample {
 			dosage,
 		}
 	}
+	pub fn get_x(&self) -> &i32 {
+		&self.position.x
+	}
+	pub fn get_y(&self) -> &i32 {
+		&self.position.y
+	}
+	pub fn get_z(&self) -> &i32 {
+		&self.position.z
+	}
+	pub fn get_dosage(&self) -> &f32 {
+		&self.dosage
+	}
+
 }
 
 pub struct Simulator {
@@ -133,12 +146,22 @@ impl Simulator {
 		self.sources.push(source);
 	}
 
-	pub fn get_dosage_at(&self, position: Point) -> f32 {
+	pub fn get_dosage_at(&self, position: &Point) -> f32 {
 		let mut dosage = 0.0f32;
 		for source in self.sources.iter() {
 			dosage += MEDIUM_CONSTANT / position.distance_from(&source.origin).powi(2);
 		}
 		dosage
+	}
+	pub fn get_sample_at(&self, position: Point) -> Sample {
+		let mut dosage = 0.0f32;
+		for source in self.sources.iter() {
+			dosage += MEDIUM_CONSTANT / position.distance_from(&source.origin).powi(2);
+		}
+		Sample {
+			position,
+			dosage,
+		}
 	}
 }
 
