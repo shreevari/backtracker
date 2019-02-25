@@ -1,0 +1,53 @@
+[[package]]
+name = "back_tracker"
+version = "0.1.0"
+dependencies = [
+ "csv 1.0.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "source_simulator 0.1.0",
+]
+
+[[package]]
+name = "csv"
+version = "1.0.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "csv-core 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde 1.0.88 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "csv-core"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "memchr 2.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "libc"
+version = "0.2.49"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "memchr"
+version = "2.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "libc 0.2.49 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "serde"
+version = "1.0.88"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "source_simulator"
+version = "0.1.0"
+
+[metadata]
+"checksum csv 1.0.5 (registry+https://github.com/rust-lang/crates.io-index)" = "9fd1c44c58078cfbeaf11fbb3eac9ae5534c23004ed770cc4bfb48e658ae4f04"
+"checksum csv-core 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)" = "fa5cdef62f37e6ffe7d1f07a381bc0db32b7a3ff1cac0de56cb0d81e71f53d65"
+"checksum libc 0.2.49 (registry+https://github.com/rust-lang/crates.io-index)" = "413f3dfc802c5dc91dc570b05125b6cda9855edfaa9825c9849807876376e70e"
+"checksum memchr 2.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "2efc7bc57c883d4a4d6e3246905283d8dae951bb3bd32f49d6ef297f546e1c39"
+"checksum serde 1.0.88 (registry+https://github.com/rust-lang/crates.io-index)" = "9f301d728f2b94c9a7691c90f07b0b4e8a4517181d9461be94c04bddeb4bd850"

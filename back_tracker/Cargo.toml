@@ -1,0 +1,9 @@
+[package]
+name = "back_tracker"
+version = "0.1.0"
+authors = ["shreevari"]
+edition = "2018"
+
+[dependencies]
+csv = "1"
+source_simulator = { path = "../source_simulator" }
