@@ -7,3 +7,4 @@ edition = "2018"
 [dependencies]
 csv = "1"
 source_simulator = { path = "../source_simulator" }
+sampler = { path = "../sampler" }

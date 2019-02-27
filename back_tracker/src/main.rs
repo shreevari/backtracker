@@ -4,6 +4,8 @@ use std::env;
 use std::process;
 use std::error::Error;
 
+use sampler::write_data;
+
 use source_simulator::Sample;
 use source_simulator::Point;
 use source_simulator::Edge;
@@ -12,13 +14,18 @@ use source_simulator::Geometric;
 // Simulation space constants
 const STARTING_POINT: i32 = 0;
 const ENDING_POINT: i32 = 100;
-
-
+// Medium constant
+const MEDIUM_CONSTANT: f32 = 100.0;
+// Threshold
+const THRESHOLD: f32 = 0.000001;
 
 fn main() {
 	//let mut grid = read_grid().unwrap();
-	let file_path = get_first_arg().unwrap_or(String::from("test.csv"));
+	let file_path = get_first_arg().unwrap_or(String::from("data.csv"));
 	let samples = read_samples(file_path);
+	//println!("{:?}", get_probability_distribution(samples.unwrap()));
+	write_data(String::from("PD"), get_probability_distribution(samples.unwrap()).unwrap());
+
 }
 
 fn read_samples(file_path: String) -> Result<Vec<Sample>, Box<Error>> {
@@ -61,6 +68,53 @@ fn read_grid(file_path: String) -> Result<Vec<Vec<Vec<f32>>>, Box<Error>> {
 	Ok(grid)
 }
 
+fn get_probability_distribution(samples: Vec<Sample>) -> Result<Vec<Vec<Vec<f32>>>, Box<Error>> {
+	let mut p_d = Vec::new();
+	let mut max = 0.0f32;
+	let mut max_point = Point::new(0, 0, 0);
+
+	for x in STARTING_POINT..ENDING_POINT {
+		let mut planes = Vec::new();
+		for y in STARTING_POINT..ENDING_POINT {
+			let mut row = Vec::new();
+			for z in STARTING_POINT..ENDING_POINT {
+
+				let mut intensity = 0.0f32;
+
+				let point = Point::new(x, y, z);
+				for sample in samples.iter() {
+					let radius = (MEDIUM_CONSTANT / sample.get_dosage()).sqrt();
+					let epsilon = (point.distance_from(sample.get_position()) - radius).abs();
+					if epsilon <= THRESHOLD {
+						intensity += 1.0;
+						if intensity > max {
+							max = intensity;
+							max_point = Point::new(x, y, z);
+						}
+					}
+				}
+
+				row.push(intensity);
+			}
+			planes.push(row);
+			row = Vec::new();
+		}
+		p_d.push(planes);
+		planes = Vec::new();
+	}
+
+
+	p_d = p_d.iter().map(|plane| 
+		plane.iter().map(|row| 
+			row.iter().map(|intensity| intensity / max
+				).collect()
+			).collect()
+		).collect();
+
+	println!("The source is (Probably) at : {:?}", max_point);	
+	
+	Ok(p_d)
+}
 
 fn get_first_arg() -> Result<String, Box<Error>> {
 	match env::args().nth(1) {
@@ -68,105 +122,3 @@ fn get_first_arg() -> Result<String, Box<Error>> {
 		Some(file_path) => Ok(file_path),
 	}
 }
-
-
-
-// #[derive(Debug)]
-// struct Sphere {
-// 	center: Point,
-// 	vertices: Vec<Point>,
-// 	edges: Vec<Edge>,
-// }
-// impl Sphere {
-// 	fn new() -> Sphere {
-// 		Sphere {
-// 			center: Point::new(0, 0, 0),
-// 			vertices: Vec::new(),
-// 			edges: Vec::new(),
-// 		}
-// 	}
-// 	fn add_edges(&mut self, mut edges: Vec<Edge>) {
-// 		self.edges.append(&mut edges);
-// 	}
-// }
-// impl Geometric for Sphere {
-// 	fn get_vertices(&self) -> &Vec<Point> {
-// 		&self.vertices
-// 	}
-// 	fn get_edges(&self) -> &Vec<Edge> {
-// 		&self.edges
-// 	}
-// 	fn add_vertex(&mut self, vertex: Point) {
-// 		self.vertices.push(vertex);
-// 	}
-// 	fn add_edge(&mut self, edge: Edge) {
-// 		self.edges.push(edge);
-// 	}
-// }
-
-// fn get_sphere(center: Point, radius: u32) -> Sphere {
-// 	let mut sphere = Sphere::new();
-
-// 	// Add all the vertices that form the sphere
-// 	for x in (0..(radius as i32)).rev() {
-// 		for y in (0..(radius as i32)).rev() {
-// 			for z in (0..(radius as i32)).rev() {
-// 				if (((x*x).abs() + (y*y).abs() + (z*z).abs()) as f32).sqrt().round() as u32 == radius {
-					
-// 					for &x_sign in [1_i32, -1_i32].iter() {
-// 						for &y_sign in [1_i32, -1_i32].iter() {
-// 							for &z_sign in [1_i32, -1_i32].iter() {
-// 								sphere.add_vertex(Point::new(
-// 									center.x + x_sign * x,
-// 									center.y + y_sign * y,
-// 									center.z + z_sign * z
-// 								));
-// 							}
-// 						}
-// 					}
-// 					continue;
-// 				}
-
-// 			}
-// 		}
-// 	}
-
-
-// 	// Connect vertices to form edges of a shell
-// 	let vertices = sphere.get_vertices();
-// 	let mut edges = Vec::new();
-// 	for vertex in sphere.get_vertices().iter() {
-
-// 		let vertex = Point::new(vertex.x, vertex.y, vertex.z);
-// 		for &x_offset in [1_i32, 0, -1_i32].iter() {
-// 			for &y_offset in [1_i32, 0, -1_i32].iter() {
-// 				for &z_offset in [1_i32, 0, -1_i32].iter() {
-					
-// 					// Avoiding single point edges
-// 					if x_offset == 0 && y_offset == 0 && z_offset == 0 {
-// 						continue;
-// 					}
-
-// 					let clone_vertex = vertex.clone();
-// 					let neighbor = Point::new(
-// 						x_offset + vertex.x,
-// 						y_offset + vertex.y,
-// 						z_offset + vertex.z
-// 					);
-
-// 					// Create edges with neighboring vertices
-// 					if vertices.contains(&neighbor) {
-// 						edges.push(Edge::new(clone_vertex, neighbor));
-// 					}
-
-// 				}
-// 			}
-// 		}
-
-// 	}
-
-// 	// Add the edges created to the sphere
-// 	sphere.add_edges(edges);
-	
-// 	sphere
-// }

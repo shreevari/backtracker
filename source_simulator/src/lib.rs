@@ -1,5 +1,6 @@
 use std::ops::{Add, Sub};
 
+// Medium constant
 const MEDIUM_CONSTANT: f32 = 100.0;
 
 pub trait Geometric {
@@ -109,6 +110,9 @@ impl Sample {
 			position,
 			dosage,
 		}
+	}
+	pub fn get_position(&self) -> &Point {
+		&self.position
 	}
 	pub fn get_x(&self) -> &i32 {
 		&self.position.x
