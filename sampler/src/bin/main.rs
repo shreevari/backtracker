@@ -13,8 +13,9 @@ use source_simulator::Space;
 use source_simulator::Source;
 use source_simulator::Point;
 use source_simulator::Sample;
-use source_simulator::Edge;
+use source_simulator::Surface;
 use source_simulator::Geometric;
+use source_simulator::Dimension;
 
 // Simulation space constants
 const STARTING_POINT: i32 = 0;
@@ -22,36 +23,75 @@ const ENDING_POINT: i32 = 100;
 const NUMBER_OF_SAMPLES: u32 = 100;
 
 struct PointGeometry {
-	vertices: Vec<Point>,
-	edges: Vec<Edge>,
+	corners: Vec<Point>,
+	surfaces: Vec<Surface>,
 }
 impl PointGeometry {
 	fn new() -> PointGeometry {
-		PointGeometry { vertices: Vec::new(), edges: Vec::new() }
+		PointGeometry { corners: Vec::new(), surfaces: Vec::new() }
 	}
-	fn from(vertices: Vec<Point>, edges: Vec<Edge>) -> PointGeometry {
+	fn from(corners: Vec<Point>, surfaces: Vec<Surface>) -> PointGeometry {
 		PointGeometry {
-			vertices,
-			edges,
+			corners,
+			surfaces,
 		}
 	}
-	fn add_vertex(&mut self, new_vertex: Point) {
-		self.vertices.push(new_vertex);
+	fn add_corner(&mut self, new_corner: Point) {
+		assert!(self.corners.len() <= 1);
+		self.corners.push(new_corner);
 	} 
 }
 
 impl Geometric for PointGeometry {
-	fn get_vertices(&self) -> &Vec<Point> {
-		&self.vertices
+	fn get_corners(&self) -> &Vec<Point> {
+		&self.corners
 	}
-	fn get_edges(&self) -> &Vec<Edge> {
-		&self.edges
+	fn get_surfaces(&self) -> &Vec<Surface> {
+		&self.surfaces
 	}
-	fn add_vertex(&mut self, vertex: Point) {
+	fn add_corner(&mut self, corner: Point) {
 		panic!("This is a point source");
 	}
-	fn add_edge(&mut self, edge: Edge) {
+	fn add_surface(&mut self, surface: Surface) {
 		panic!("This is a point source");
+	}
+	fn get_dimension(&self) -> Dimension {
+		Dimension::OneDimensional
+	}
+}
+
+struct LineGeometry {
+	corners: Vec<Point>,
+	surfaces: Vec<Surface>,
+}
+impl LineGeometry {
+	fn new() -> LineGeometry {
+		LineGeometry { corners: Vec::new(), surfaces: Vec::new() }
+	}
+	fn from(corners: Vec<Point>, surfaces: Vec<Surface>) -> LineGeometry {
+		LineGeometry {
+			corners,
+			surfaces,
+		}
+	}
+}
+
+impl Geometric for LineGeometry {
+	fn get_corners(&self) -> &Vec<Point> {
+		&self.corners
+	}
+	fn get_surfaces(&self) -> &Vec<Surface> {
+		&self.surfaces
+	}
+	fn add_corner(&mut self, new_corner: Point) {
+		assert!(self.corners.len() <= 2);
+		self.corners.push(new_corner);
+	} 
+	fn add_surface(&mut self, surface: Surface) {
+		panic!("This is a line source");
+	}
+	fn get_dimension(&self) -> Dimension {
+		Dimension::TwoDimensional
 	}
 }
 
@@ -62,6 +102,8 @@ fn main() {
 	let space_end = Point::new(ENDING_POINT, ENDING_POINT, ENDING_POINT);
 	let space = Space::new(space_start, space_end);
 	
+	/* Point source simulation 
+
 	// Simulator for point source
 	let mut point_source_simulator = Simulator::new(space, 1);
 	
@@ -69,7 +111,7 @@ fn main() {
 	println!("Source Position : {:?}", source_position);
 	// Creation of Point Geometry
 	let mut point_geometry = PointGeometry::new();
-	point_geometry.add_vertex(source_position.clone());
+	point_geometry.add_corner(source_position.clone());
 	
 	// Creation of the radiation source assuming Point Geometry
 	let point_source = Source::new(source_position, Box::new(point_geometry));
@@ -87,6 +129,37 @@ fn main() {
     write_random_samples(
     	get_first_arg().unwrap_or(String::from("data.csv")),
     	get_random_samples(point_source_simulator, NUMBER_OF_SAMPLES));
+	*/
+
+	// Line source simulation 
+
+	// Simulator for point source
+	let mut line_source_simulator = Simulator::new(space, 1);
+	
+	//let source_position = gen_random_point();
+	//println!("Source Position : {:?}", source_position);
+	// Creation of Point Geometry
+	let mut line_geometry = LineGeometry::new();
+	line_geometry.add_corner(Point::new(STARTING_POINT, STARTING_POINT, STARTING_POINT));
+	line_geometry.add_corner(Point::new(ENDING_POINT, STARTING_POINT, STARTING_POINT));
+
+	// Creation of the radiation source assuming Point Geometry
+	let line_source = Source::new(Point::new(STARTING_POINT, STARTING_POINT, STARTING_POINT), Box::new(line_geometry));
+
+	// Adding the source to the simulator
+	line_source_simulator.add_source(line_source);
+	
+	// Write the whole grid to a csv file
+	//write_full_grid(point_source_simulator);
+    
+    let random_point = gen_random_point();
+    println!("Sample position : {:?}", random_point);
+    println!("Simulated Dose : {}", line_source_simulator.get_dosage_at(&random_point));
+    
+    write_random_samples(
+    	get_first_arg().unwrap_or(String::from("data.csv")),
+    	get_random_samples(line_source_simulator, NUMBER_OF_SAMPLES));
+
 }
 
 // Generating random values for the position of the point

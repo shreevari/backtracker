@@ -1,32 +1,33 @@
 extern crate csv;
 
 use std::env;
-use std::process;
 use std::error::Error;
 
 use sampler::write_data;
+use sampler::basics;
 
 use source_simulator::Sample;
 use source_simulator::Point;
-use source_simulator::Edge;
+//use source_simulator::Edge;
 use source_simulator::Geometric;
 
 // Simulation space constants
 const STARTING_POINT: i32 = 0;
 const ENDING_POINT: i32 = 100;
 // Medium constant
-const MEDIUM_CONSTANT: f32 = 100.0;
+const MEDIUM_CONSTANT: f32 = 111.0;
 // Threshold
-const THRESHOLD: f32 = 0.000001;
+const THRESHOLD: f32 = 0.001;
 
 fn main() {
 	//let mut grid = read_grid().unwrap();
 	let file_path = get_first_arg().unwrap_or(String::from("data.csv"));
 	let samples = read_samples(file_path);
 	//println!("{:?}", get_probability_distribution(samples.unwrap()));
-	write_data(String::from("PD"), get_probability_distribution(samples.unwrap()).unwrap());
+	write_data(String::from("PD.csv"), get_probability_distribution(samples.unwrap()).unwrap());
 
 }
+
 
 fn read_samples(file_path: String) -> Result<Vec<Sample>, Box<Error>> {
 
@@ -83,13 +84,16 @@ fn get_probability_distribution(samples: Vec<Sample>) -> Result<Vec<Vec<Vec<f32>
 
 				let point = Point::new(x, y, z);
 				for sample in samples.iter() {
-					let radius = (MEDIUM_CONSTANT / sample.get_dosage()).sqrt();
+					
+					let radius = 0.0f32;
+					//println!("{}\n", radius);
 					let epsilon = (point.distance_from(sample.get_position()) - radius).abs();
 					if epsilon <= THRESHOLD {
 						intensity += 1.0;
 						if intensity > max {
 							max = intensity;
 							max_point = Point::new(x, y, z);
+							println!("{:?}", max_point);
 						}
 					}
 				}
@@ -111,9 +115,27 @@ fn get_probability_distribution(samples: Vec<Sample>) -> Result<Vec<Vec<Vec<f32>
 			).collect()
 		).collect();
 
-	println!("The source is (Probably) at : {:?}", max_point);	
+	// let mut intermediate_value = basics(p_d.into_iter().flatten().flatten().collect::<Vec<f32>>(), max).unwrap();	
+
+	// let mut p_d = Vec::new();
+	// for x in (STARTING_POINT..ENDING_POINT) {
+	// 	let mut plane = Vec::new();
+	// 	for y in (STARTING_POINT..ENDING_POINT) {
+	// 		let mut row = Vec::new();
+	// 		for z in (STARTING_POINT..ENDING_POINT) {
+	// 			row.push(intermediate_value[z as usize]);
+	// 		}
+	// 		plane.push(row);
+	// 	}
+	// 	p_d.push(plane);
+	// }
+
+	//println!("{:?}", p_d.into_iter().flatten().flatten().collect::<Vec<f32>>());	
+
+	//println!("The source is (Probably) at : {:?}", max_point);	
 	
 	Ok(p_d)
+	//Ok(Vec::new())
 }
 
 fn get_first_arg() -> Result<String, Box<Error>> {

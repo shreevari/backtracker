@@ -5,6 +5,8 @@ authors = ["shreevari"]
 edition = "2018"
 
 [dependencies]
+ocl = "0.19"
+ocl-extras = "0.1.1"
 rand = "0.4.0"
 csv = "1"
 source_simulator = { path = "../source_simulator" }
